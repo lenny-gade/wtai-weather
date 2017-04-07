@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import os, time, requests
+import sys, os, time, requests
 from slackclient import SlackClient
 from geoCode import GeoCode
 from skpWeather import SkpWeather
