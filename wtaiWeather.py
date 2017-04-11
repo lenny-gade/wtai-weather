@@ -4,15 +4,17 @@
 import sys, os, time, requests
 from slackclient import SlackClient
 from geoCode import GeoCode
-from skpWeather import SkpWeather
+from skpWeatherApi import SkpWeatherApi
+from airVisualApi import AirVisualApi
 
 READ_WEBSOCKET_DELAY = 1
 
 class WtaiWeather:
 	def __init__(self):
-		token = "xoxb-166007871686-71kuO6hr8y69TIJcUYzGxQZH"
+		token = "xoxb-166007871686-kXttqHSvmcQVRXDwGTv1kYAO"
 		self.slackClient = SlackClient(token)
-		self.defaultCommand = "미세먼지"
+		#self.defaultCommand = "미세먼지"
+		self.defaultCommand = "공기"
 
 	def run(self):
 		if self.slackClient.rtm_connect():
@@ -31,11 +33,12 @@ class WtaiWeather:
 		if cmd and locName and date and channel:
 			lat, lon = GeoCode.get(locName)
 			if lat and lon:
-				resMap = SkpWeather.get(lat, lon)
-				if resMap and "pm10" in resMap:
-					pm10 = float(resMap["pm10"])
-					pm10Level = self._pm10Level(pm10)
-				response = "현재 %s [%s / %s]의 미세먼지 농도는 %d로 <%s> 단계입니다." % (locName, lat, lon, int(pm10), pm10Level[1])
+				#resMap = SkpWeatherApi.get(lat, lon)
+				resMap = AirVisualApi.get(lat, lon)
+				if resMap and "index" in resMap:
+					index, ptype = float(resMap["index"]), resMap["ptype"]
+					level = self._pollutionLevel(ptype, index)
+				response = "현재 %s [%s / %s]의 오염 지수는 %d로 <%s> 단계입니다." % (locName, lat, lon, int(index), level[1])
 		else:
 			response = "사용법 : !%s 장소" % self.defaultCommand
 		self.slackClient.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
@@ -62,11 +65,21 @@ class WtaiWeather:
 	def _encode(self, s):
 		return s.encode("utf-8")
 
-	def _pm10Level(self, pm10):
-		if pm10 <= 30: res = (0, "좋음")
-		elif pm10 > 30 and pm10 <= 80: res = (1, "보통")
-		elif pm10 > 80 and pm10 <= 150: res = (2, "나쁨")
-		else: res = (3, "매우 나쁨")
+	def _pollutionLevel(self, ptype, val):
+		if ptype == "pm10":
+			if val <= 30: res = (0, "좋음")
+			elif val > 30 and val <= 80: res = (1, "보통")
+			elif val > 80 and val <= 150: res = (2, "나쁨")
+			else: res = (3, "매우 나쁨")
+		elif ptype == "aqius":
+			if val <= 50: res = (0, "좋음")
+			elif val > 50 and val <= 100: res = (1, "보통")
+			elif val > 100 and val <= 150: res = (2, "나쁨")
+			elif val > 150 and val <= 200: res = (3, "매우 나쁨")
+			elif val > 200 and val <= 300: res = (4, "매우매우 짱 나쁨")
+			else: res = (5, "넌 독을 마시고 있음")
+		else:
+			return "Undefined"
 		return res
 
 if __name__ == "__main__":

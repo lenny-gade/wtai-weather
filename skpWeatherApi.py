@@ -3,7 +3,7 @@
 
 import sys, os, traceback, time, requests, json
 
-class SkpWeather:
+class SkpWeatherApi:
 	@staticmethod
 	def get(lat, lon):
 		appKey = "58faf221-c585-3bb1-849c-79a6a1876425"
@@ -16,7 +16,7 @@ class SkpWeather:
 			jsObj = json.loads(resp.text)
 			if "weather" in jsObj:
 				pm10 = jsObj["weather"]["dust"][0]["pm10"]["value"]
-				return {"pm10": pm10}
+				return {"index": pm10, "ptype": "pm10"}
 			else:
 				return None
 		except:
@@ -25,4 +25,4 @@ class SkpWeather:
 
 if __name__ == "__main__":
 	lat, lon = "37.5714000000", "126.9658000000"
-	print SkpWeather.get(lat, lon)
+	print SkpWeatherApi.get(lat, lon)
