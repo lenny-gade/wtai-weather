@@ -6,12 +6,14 @@ from slackclient import SlackClient
 from geoCode import GeoCode
 from skpWeatherApi import SkpWeatherApi
 from airVisualApi import AirVisualApi
+from wtaiTokenManager import WtaiTokenManager
 
 READ_WEBSOCKET_DELAY = 1
 
 class WtaiWeather:
 	def __init__(self):
-		token = "xoxb-166007871686-kXttqHSvmcQVRXDwGTv1kYAO"
+		tokeManager = WtaiTokenManager()
+		token = tokenManager.get("slack")
 		self.slackClient = SlackClient(token)
 		#self.defaultCommand = "미세먼지"
 		self.defaultCommand = "공기"
