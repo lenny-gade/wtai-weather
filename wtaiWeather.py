@@ -12,7 +12,7 @@ READ_WEBSOCKET_DELAY = 1
 
 class WtaiWeather:
 	def __init__(self):
-		tokeManager = WtaiTokenManager()
+		tokenManager = WtaiTokenManager()
 		token = tokenManager.get("slack")
 		self.slackClient = SlackClient(token)
 		#self.defaultCommand = "미세먼지"
